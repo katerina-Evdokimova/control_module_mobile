@@ -4,9 +4,15 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.util.SplittableRandom;
 
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
@@ -22,25 +28,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private double HIGHT_2 = 255;
 
     private byte [] send = new byte[8];
+    private boolean sendUdp;
 
-    public class SendThread extends Thread {
-
-        @Override
-        public void run() {
-            while(true) {
-                System.out.println("Отправляем: " + getSend());
-                for (int i = 0; i < 8; i++){
-                    send[i] = (byte) 0;
-                }
-                try {
-                    sleep(100);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-
-        }
-    }
+    // TODO ПОМЕНЯТЬ!!
+    private String outputIP = "localhost";
+    private Integer broadcastPort = 5060;
 
     /**
      * Called when the activity is first created.
@@ -49,8 +41,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        SendThread thread = new SendThread();
-        thread.start();
 
 
         angleTextView1 = (TextView) findViewById(R.id.angleTextView1);
@@ -71,6 +61,80 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         button_x1 = (Button) findViewById(R.id.button_x1);
         button_x2 = (Button) findViewById(R.id.button_x2);
 
+        //-----UDP send thread
+        Thread udpSendThread = new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+
+
+                while (true) {
+
+                    try {
+                        Thread.sleep(100);
+                    }
+
+                    catch (InterruptedException e1) {
+                        // TODO Auto-generated catch block
+                        e1.printStackTrace();
+                    }
+
+                    if (sendUdp == true) {
+
+                        try {
+
+                            // get server name
+
+                            InetAddress serverAddr = InetAddress.getByName(outputIP);
+                            Log.d("UDP", "C: Connecting...");
+
+                            // create new UDP socket
+                            DatagramSocket socket = new DatagramSocket();
+
+                            // prepare data to be sent
+                           // byte[] buf = udpOutputData.getBytes();
+
+                            // create a UDP packet with data and its destination ip & port
+                            DatagramPacket packet = new DatagramPacket(send, send.length, serverAddr, broadcastPort);
+                            Log.d("UDP", "C: Sending: '" + new String(send) + "'");
+
+                            // send the UDP packet
+                            socket.send(packet);
+
+                            socket.close();
+
+                            Log.d("UDP", "C: Sent.");
+                            Log.d("UDP", "C: Done.");
+
+                            for (int i = 0; i < 8; i++){
+                                send[i] = (byte) 0;
+                            }
+                        }
+
+                        catch (Exception e) {
+
+                            Log.e("UDP", "C: Error", e);
+
+                        }
+
+                        try {
+                            Thread.sleep(100);
+                        }
+
+                        catch (InterruptedException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        }
+
+
+                        sendUdp = false;
+                    }
+
+                }
+            }
+
+        });
+
         //Event listener that always returns the variation of the angle in degrees, motion power in percentage and direction of movement
         joystick.setOnJoystickMoveListener(new JoystickView.OnJoystickMoveListener() {
 
@@ -84,6 +148,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 angleTextView1.setText(
                         "X:" + map(X) +" Y: "+ map(Y));
                 powerTextView1.setText(" " + String.valueOf(power) + "%");
+
+                sendUdp = true;
             }
         }, JoystickView.DEFAULT_LOOP_INTERVAL);
 
@@ -100,6 +166,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 angleTextView2.setText(
                         "X:" + map(X) +"Y: "+ map(Y));
                 powerTextView2.setText(" " + String.valueOf(power) + "%");
+                sendUdp = true;
 
             }
         }, JoystickView.DEFAULT_LOOP_INTERVAL);
@@ -149,13 +216,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
 
         }
+        sendUdp = true;
     }
 
     public String getSend() {
         return byteArrayToHex(send);
     }
 
-    public static String byteArrayToHex(byte[] a) {
+    private static String byteArrayToHex(byte[] a) {
         StringBuilder sb = new StringBuilder(a.length * 2);
         for(byte b: a) {
             sb.append(String.format("%02x", b));
@@ -172,4 +240,5 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // Накладываем его на конечный отрезок
         return (int)Math.ceil(LOW_2 + (HIGHT_2 - LOW_2) * relative_value);
     }
+
 }
