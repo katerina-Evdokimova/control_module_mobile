@@ -5,9 +5,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -15,7 +17,8 @@ import java.net.InetAddress;
 import java.util.SplittableRandom;
 
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class MainActivity extends AppCompatActivity
+{
     private TextView angleTextView1, angleTextView2;
     private TextView powerTextView1, powerTextView2;
     private Button button_up, button_right, button_left, button_down, button_y1, button_y2,
@@ -27,7 +30,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private double LOW_2 = 0;
     private double HIGHT_2 = 255;
 
-    private byte [] send = new byte[8];
+    private byte [] send = new byte[]{0, 0, 0, 0, 0, 0, 0, 0};
     private boolean sendUdp;
 
     // TODO ПОМЕНЯТЬ!!
@@ -135,6 +138,57 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         });
 
+        Thread ttt = new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+
+                while (true) {
+
+                    try {
+                        Thread.sleep(100);
+                    }
+
+                    catch (InterruptedException e1) {
+                        // TODO Auto-generated catch block
+                        e1.printStackTrace();
+                    }
+
+                    if (sendUdp == true) {
+
+                        try {
+
+                            System.out.println("ОТПРАВКА!!!!!!" + getSend());
+                            Log.d("UDP", "C: Sent.");
+                            Log.d("UDP", "C: Done.");
+
+                        }
+
+                        catch (Exception e) {
+
+                            Log.e("UDP", "C: Error", e);
+
+                        }
+
+                        try {
+                            Thread.sleep(100);
+                        }
+
+                        catch (InterruptedException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        }
+
+
+                        sendUdp = false;
+                    }
+
+                }
+            }
+        });
+
+        ttt.start();
+
         //Event listener that always returns the variation of the angle in degrees, motion power in percentage and direction of movement
         joystick.setOnJoystickMoveListener(new JoystickView.OnJoystickMoveListener() {
 
@@ -172,52 +226,141 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }, JoystickView.DEFAULT_LOOP_INTERVAL);
 
         // устанавливаем один обработчик для всех кнопок
-        button_up.setOnClickListener(this);
-        button_down.setOnClickListener(this);
-        button_left.setOnClickListener(this);
-        button_right.setOnClickListener(this);
+        // Left joystick
 
-        button_x1.setOnClickListener(this);
-        button_x2.setOnClickListener(this);
-        button_y1.setOnClickListener(this);
-        button_y2.setOnClickListener(this);
+        button_up.setOnTouchListener(new View.OnTouchListener() {
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN: // нажатие
+                        send[4] |= 16;
+                        sendUdp = true;
+                        break;
+                    case MotionEvent.ACTION_UP: // отпускание
+                        send[4] ^= 16;
+                        break;
+                }
+                return false;
+            }
+        });
+        button_down.setOnTouchListener(new View.OnTouchListener() {
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN: // нажатие
+                        send[4] |= 1;
+                        sendUdp = true;
+                        break;
+                    case MotionEvent.ACTION_UP: // отпускание
+                        send[4] ^= 1;
+                        break;
+                }
+                return false;
+            }
+        });
+        button_left.setOnTouchListener(new View.OnTouchListener() {
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN: // нажатие
+                        send[5] |= 16;
+                        sendUdp = true;
+                        break;
+                    case MotionEvent.ACTION_UP: // отпускание
+                        send[5] ^= 16;
+                        break;
+                }
+                return false;
+            }
+        });
+        button_right.setOnTouchListener(new View.OnTouchListener() {
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN: // нажатие
+                        send[5] |= 1;
+                        sendUdp = true;
+                        break;
+                    case MotionEvent.ACTION_UP: // отпускание
+                        send[5] ^= 1;
+                        break;
+                }
+                return false;
+            }
+        });
+
+        button_x1.setOnTouchListener(new View.OnTouchListener() {
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN: // нажатие
+                        send[6] |= 16;
+                        sendUdp = true;
+                        break;
+                    case MotionEvent.ACTION_UP: // отпускание
+                        send[6] ^= 16;
+                        break;
+                }
+                return false;
+            }
+        });;
+        button_x2.setOnTouchListener(new View.OnTouchListener() {
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN: // нажатие
+                        send[6] |= 1;
+                        sendUdp = true;
+                        break;
+                    case MotionEvent.ACTION_UP: // отпускание
+                        send[6] ^= 1;
+                        break;
+                }
+                return false;
+            }
+        });;
+        button_y1.setOnTouchListener(new View.OnTouchListener() {
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN: // нажатие
+                        send[7] |= 16;
+                        sendUdp = true;
+                        break;
+                    case MotionEvent.ACTION_UP: // отпускание
+                        send[7] ^= 16;
+                        break;
+                }
+                return false;
+            }
+        });;
+        button_y2.setOnTouchListener(new View.OnTouchListener() {
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN: // нажатие
+                        send[7] |= 1;
+                        sendUdp = true;
+                        break;
+                    case MotionEvent.ACTION_UP: // отпускание
+                        send[7] ^= 1;
+                        break;
+                }
+                return false;
+            }
+        });;
+
 
     }
 
-
-
-
-    @Override
-    public void onClick(View view) {
-        switch (view.getId()) {
-            case R.id.button:
-                send[4] = 16;
-                break;
-            case R.id.button_down:
-                send[4] += 1;
-                break;
-            case R.id.button_left:
-                send[5] = 16;
-                break;
-            case R.id.button_right:
-                send[5] += 1;
-                break;
-            case R.id.button_x1:
-                send[6] = 16;
-                break;
-            case R.id.button_y2:
-                send[7] += 1;
-                break;
-            case R.id.button_x2:
-                send[6] += 1;
-                break;
-            case R.id.button_y1:
-                send[7] = 16;
-                break;
-
-        }
-        sendUdp = true;
-    }
 
     public String getSend() {
         return byteArrayToHex(send);
@@ -232,7 +375,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private int map(double value){
-
 
         // Положение числа в исходном отрезке, от -100 до 100
         double relative_value = (value - LOW) / (HIGHT - LOW);
