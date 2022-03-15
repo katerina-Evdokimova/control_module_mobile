@@ -7,5 +7,7 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFF</color>
-    <color name="button">#5B2A3737</color>
+    <color name="button">#572A3737</color>
+    <color name="joystick">#37B6C7E3</color>
+    <color name="joystick_bu">#51B6C7E3</color>
 </resources>

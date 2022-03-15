@@ -44,21 +44,21 @@ public class JoystickView extends View implements Runnable {
 
     public JoystickView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        initJoystickView();
+        initJoystickView(context);
     }
 
     public JoystickView(Context context, AttributeSet attrs, int defaultStyle) {
         super(context, attrs, defaultStyle);
-        initJoystickView();
+        initJoystickView(context);
     }
 
-    protected void initJoystickView() {
+    protected void initJoystickView(Context context) {
         mainCircle = new Paint(Paint.ANTI_ALIAS_FLAG);
-        mainCircle.setColor(Color.WHITE);
+        mainCircle.setColor(context.getResources().getColor(R.color.joystick));
         mainCircle.setStyle(Paint.Style.FILL_AND_STROKE);
 
         secondaryCircle = new Paint();
-        secondaryCircle.setColor(Color.GREEN);
+        secondaryCircle.setColor(context.getResources().getColor(R.color.joystick_bu));
         secondaryCircle.setStyle(Paint.Style.STROKE);
 
         verticalLine = new Paint();
@@ -70,7 +70,7 @@ public class JoystickView extends View implements Runnable {
         horizontalLine.setColor(Color.BLACK);
 
         button = new Paint(Paint.ANTI_ALIAS_FLAG);
-        button.setColor(Color.GREEN);
+        button.setColor(context.getResources().getColor(R.color.joystick_bu));
         button.setStyle(Paint.Style.FILL);
     }
 

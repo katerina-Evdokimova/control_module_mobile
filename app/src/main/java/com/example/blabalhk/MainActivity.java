@@ -7,6 +7,9 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
+import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -17,8 +20,7 @@ import java.net.InetAddress;
 import java.util.SplittableRandom;
 
 
-public class MainActivity extends AppCompatActivity
-{
+public class MainActivity extends AppCompatActivity {
     private TextView angleTextView1, angleTextView2;
     private TextView powerTextView1, powerTextView2;
     private Button button_up, button_right, button_left, button_down, button_y1, button_y2,
@@ -30,7 +32,7 @@ public class MainActivity extends AppCompatActivity
     private double LOW_2 = 0;
     private double HIGHT_2 = 255;
 
-    private byte [] send = new byte[]{0, 0, 0, 0, 0, 0, 0, 0};
+    private byte[] send = new byte[]{0, 0, 0, 0, 0, 0, 0, 0};
     private boolean sendUdp;
 
     // TODO ПОМЕНЯТЬ!!
@@ -43,13 +45,11 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
         setContentView(R.layout.activity_main);
-
-
-        angleTextView1 = (TextView) findViewById(R.id.angleTextView1);
-        powerTextView1 = (TextView) findViewById(R.id.powerTextView1);
-        angleTextView2 = (TextView) findViewById(R.id.angleTextView2);
-        powerTextView2 = (TextView) findViewById(R.id.powerTextView2);
 
         //Referencing also other views
         joystick = (JoystickView) findViewById(R.id.joystickView);
@@ -64,6 +64,9 @@ public class MainActivity extends AppCompatActivity
         button_x1 = (Button) findViewById(R.id.button_x1);
         button_x2 = (Button) findViewById(R.id.button_x2);
 
+        WebView webView = findViewById(R.id.puge);
+        webView.loadUrl("file:///android_asset/mypage.html");
+        webView.getSettings().setJavaScriptEnabled(true);
         //-----UDP send thread
         Thread udpSendThread = new Thread(new Runnable() {
 
@@ -75,9 +78,7 @@ public class MainActivity extends AppCompatActivity
 
                     try {
                         Thread.sleep(100);
-                    }
-
-                    catch (InterruptedException e1) {
+                    } catch (InterruptedException e1) {
                         // TODO Auto-generated catch block
                         e1.printStackTrace();
                     }
@@ -95,7 +96,7 @@ public class MainActivity extends AppCompatActivity
                             DatagramSocket socket = new DatagramSocket();
 
                             // prepare data to be sent
-                           // byte[] buf = udpOutputData.getBytes();
+                            // byte[] buf = udpOutputData.getBytes();
 
                             // create a UDP packet with data and its destination ip & port
                             DatagramPacket packet = new DatagramPacket(send, send.length, serverAddr, broadcastPort);
@@ -109,12 +110,10 @@ public class MainActivity extends AppCompatActivity
                             Log.d("UDP", "C: Sent.");
                             Log.d("UDP", "C: Done.");
 
-                            for (int i = 0; i < 8; i++){
+                            for (int i = 0; i < 8; i++) {
                                 send[i] = (byte) 0;
                             }
-                        }
-
-                        catch (Exception e) {
+                        } catch (Exception e) {
 
                             Log.e("UDP", "C: Error", e);
 
@@ -122,9 +121,7 @@ public class MainActivity extends AppCompatActivity
 
                         try {
                             Thread.sleep(100);
-                        }
-
-                        catch (InterruptedException e) {
+                        } catch (InterruptedException e) {
                             // TODO Auto-generated catch block
                             e.printStackTrace();
                         }
@@ -138,56 +135,44 @@ public class MainActivity extends AppCompatActivity
 
         });
 
-        Thread ttt = new Thread(new Runnable() {
-            @Override
-            public void run() {
-
-
-                while (true) {
-
-                    try {
-                        Thread.sleep(100);
-                    }
-
-                    catch (InterruptedException e1) {
-                        // TODO Auto-generated catch block
-                        e1.printStackTrace();
-                    }
-
-                    if (sendUdp == true) {
-
-                        try {
-
-                            System.out.println("ОТПРАВКА!!!!!!" + getSend());
-                            Log.d("UDP", "C: Sent.");
-                            Log.d("UDP", "C: Done.");
-
-                        }
-
-                        catch (Exception e) {
-
-                            Log.e("UDP", "C: Error", e);
-
-                        }
-
-                        try {
-                            Thread.sleep(100);
-                        }
-
-                        catch (InterruptedException e) {
-                            // TODO Auto-generated catch block
-                            e.printStackTrace();
-                        }
-
-
-                        sendUdp = false;
-                    }
-
-                }
-            }
-        });
-
-        ttt.start();
+//        Thread ttt = new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                while (true) {
+//                    try {
+//                        Thread.sleep(100);
+//                    } catch (InterruptedException e1) {
+//                        // TODO Auto-generated catch block
+//                        e1.printStackTrace();
+//                    }
+//                    if (sendUdp == true) {
+//                        try {
+//                            System.out.println("ОТПРАВКА!!!!!!" + getSend());
+//                            Log.d("UDP", "C: Sent.");
+//                            Log.d("UDP", "C: Done.");
+//
+//                        } catch (Exception e) {
+//
+//                            Log.e("UDP", "C: Error", e);
+//
+//                        }
+//
+//                        try {
+//                            Thread.sleep(100);
+//                        } catch (InterruptedException e) {
+//                            // TODO Auto-generated catch block
+//                            e.printStackTrace();
+//                        }
+//
+//
+//                        sendUdp = false;
+//                    }
+//
+//                }
+//            }
+//        });
+//
+//        ttt.start();
 
         //Event listener that always returns the variation of the angle in degrees, motion power in percentage and direction of movement
         joystick.setOnJoystickMoveListener(new JoystickView.OnJoystickMoveListener() {
@@ -199,10 +184,6 @@ public class MainActivity extends AppCompatActivity
                 double X = Math.sin(Math.toRadians((double) angle)) * power;
                 send[0] = (byte) map(X);
                 send[1] = (byte) map(Y);
-                angleTextView1.setText(
-                        "X:" + map(X) +" Y: "+ map(Y));
-                powerTextView1.setText(" " + String.valueOf(power) + "%");
-
                 sendUdp = true;
             }
         }, JoystickView.DEFAULT_LOOP_INTERVAL);
@@ -217,9 +198,6 @@ public class MainActivity extends AppCompatActivity
                 double X = Math.sin(Math.toRadians((double) angle)) * power;
                 send[2] = (byte) map(X);
                 send[3] = (byte) map(Y);
-                angleTextView2.setText(
-                        "X:" + map(X) +"Y: "+ map(Y));
-                powerTextView2.setText(" " + String.valueOf(power) + "%");
                 sendUdp = true;
 
             }
@@ -308,7 +286,8 @@ public class MainActivity extends AppCompatActivity
                 }
                 return false;
             }
-        });;
+        });
+        ;
         button_x2.setOnTouchListener(new View.OnTouchListener() {
 
             @Override
@@ -324,7 +303,8 @@ public class MainActivity extends AppCompatActivity
                 }
                 return false;
             }
-        });;
+        });
+        ;
         button_y1.setOnTouchListener(new View.OnTouchListener() {
 
             @Override
@@ -340,7 +320,8 @@ public class MainActivity extends AppCompatActivity
                 }
                 return false;
             }
-        });;
+        });
+        ;
         button_y2.setOnTouchListener(new View.OnTouchListener() {
 
             @Override
@@ -356,7 +337,8 @@ public class MainActivity extends AppCompatActivity
                 }
                 return false;
             }
-        });;
+        });
+        ;
 
 
     }
@@ -368,19 +350,19 @@ public class MainActivity extends AppCompatActivity
 
     private static String byteArrayToHex(byte[] a) {
         StringBuilder sb = new StringBuilder(a.length * 2);
-        for(byte b: a) {
+        for (byte b : a) {
             sb.append(String.format("%02x", b));
         }
         return sb.toString();
     }
 
-    private int map(double value){
+    private int map(double value) {
 
         // Положение числа в исходном отрезке, от -100 до 100
         double relative_value = (value - LOW) / (HIGHT - LOW);
 
         // Накладываем его на конечный отрезок
-        return (int)Math.ceil(LOW_2 + (HIGHT_2 - LOW_2) * relative_value);
+        return (int) Math.ceil(LOW_2 + (HIGHT_2 - LOW_2) * relative_value);
     }
 
 }
