@@ -1,30 +1,46 @@
 package com.example.blabalhk;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentManager;
 
 import android.app.Activity;
+import android.app.Dialog;
+import android.media.AudioDeviceInfo;
+import android.media.AudioManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.speech.RecognitionListener;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.WebView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.Spinner;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.SplittableRandom;
 
-
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements CompoundButton.OnCheckedChangeListener {
     private TextView angleTextView1, angleTextView2;
     private TextView powerTextView1, powerTextView2;
     private Button button_up, button_right, button_left, button_down, button_y1, button_y2,
-            button_x1, button_x2;
+            button_x1, button_x2, select;
+    FloatingActionButton settigs;
+    private Spinner spinner;
     // Importing also other views
     private JoystickView joystick, joystick2;
     private double LOW = -100;
@@ -39,9 +55,12 @@ public class MainActivity extends AppCompatActivity {
     private String outputIP = "localhost";
     private Integer broadcastPort = 5060;
 
+    public int result_devise = 0;
+
     /**
      * Called when the activity is first created.
      */
+    @RequiresApi(api = Build.VERSION_CODES.S)
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -63,9 +82,15 @@ public class MainActivity extends AppCompatActivity {
         button_y2 = (Button) findViewById(R.id.button_y2);
         button_x1 = (Button) findViewById(R.id.button_x1);
         button_x2 = (Button) findViewById(R.id.button_x2);
+        select = (Button) findViewById(R.id.select);
+        settigs = (FloatingActionButton) findViewById(R.id.settings);
+
+
+
 
         WebView webView = findViewById(R.id.puge);
-        webView.loadUrl("file:///android_asset/mypage.html");
+//        webView.loadUrl("file:///android_asset/mypage.html");
+        webView.loadUrl("https://thiscatdoesnotexist.com/");
         webView.getSettings().setJavaScriptEnabled(true);
         //-----UDP send thread
         Thread udpSendThread = new Thread(new Runnable() {
@@ -182,6 +207,7 @@ public class MainActivity extends AppCompatActivity {
                 // TODO Auto-generated method stub
                 double Y = Math.cos(Math.toRadians((double) angle)) * power;
                 double X = Math.sin(Math.toRadians((double) angle)) * power;
+                System.out.println(result_devise);
                 send[0] = (byte) map(X);
                 send[1] = (byte) map(Y);
                 sendUdp = true;
@@ -340,8 +366,68 @@ public class MainActivity extends AppCompatActivity {
         });
         ;
 
+        Switch switch_micro = findViewById(R.id.micro);
+        Switch switch_camera = findViewById(R.id.camera);
+        if (switch_micro != null) switch_micro.setOnCheckedChangeListener(this);
 
+        if (switch_camera != null) switch_camera.setOnCheckedChangeListener(this);
+
+        Dialog dialog = new Dialog(MainActivity.this);
+
+//        AudioManager audioManager = this.getApplicationContext().getSystemService(AudioManager.class);
+//        AudioDeviceInfo speakerDevice = null;
+//        List<AudioDeviceInfo> devices = null;
+//
+//
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+//            devices = audioManager.getAvailableCommunicationDevices();
+//            ArrayList<String> devs = new ArrayList<>();
+//            ArrayList<AudioDeviceInfo> devis = new ArrayList<>();
+//            for (AudioDeviceInfo device : devices) {
+//                System.out.println("AAAAAAAAAAAA " + device.getType());
+//                devis.add(device);
+//                devs.add(String.valueOf(device.getType()));
+//            }
+//            System.out.println(devs + "\n---\t----\t---\n" + devis);
+//        }
+
+        settigs.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+//                // Установите заголовок
+//                dialog.setTitle("Настройки");
+//                // Передайте ссылку на разметку
+//                dialog.setContentView(R.layout.settings);
+//                dialog.show()
+//                FragmentManager manager = getSupportFragmentManager();
+                final String[] catNamesArray = {"0", "1", "2"};
+
+                SettingsDialog myDialogFragment = new SettingsDialog(catNamesArray, result_devise, MainActivity.this);
+                myDialogFragment.show(getSupportFragmentManager(), "myDialog");
+
+            }
+        });
+
+
+        spinner = findViewById(R.id.spinner);
+
+//        select.setOnClickListener(new View.OnClickListener() {
+//
+//            @Override
+//            public void onClick(View view) {
+//
+////                System.out.println(String.valueOf(spinner.getSelectedItem()));
+//                dialog.dismiss();
+//            }
+//        });
     }
+
+    @Override
+    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+        Toast.makeText(this, "Отслеживание переключения: " + buttonView.getId() + "\n"+ (isChecked ? "on" : "off"),
+                Toast.LENGTH_SHORT).show();
+    }
+
 
 
     public String getSend() {
@@ -354,6 +440,14 @@ public class MainActivity extends AppCompatActivity {
             sb.append(String.format("%02x", b));
         }
         return sb.toString();
+    }
+
+    public int getResult_devise() {
+        return result_devise;
+    }
+
+    public void setResult_devise(int item){
+        result_devise = item;
     }
 
     private int map(double value) {
